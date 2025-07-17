@@ -5,7 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Batch Certificate Generator</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Caramel:wght@400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Great+Vibes&family=Allura&family=Alex+Brush&family=Satisfy&display=swap');
+        
+        /* Custom font face for CaramelRegular - user needs to add the font file */
+        @font-face {
+            font-family: 'CaramelRegular';
+            src: url('CaramelRegular.ttf') format('truetype'),
+                 url('CaramelRegular.woff2') format('woff2'),
+                 url('CaramelRegular.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
         
         body {
             font-family: Arial, sans-serif;
@@ -215,7 +225,12 @@
                         <option value="Verdana, sans-serif">Verdana</option>
                         <option value="Helvetica, sans-serif">Helvetica</option>
                         <option value="Courier New, monospace">Courier New</option>
-                        <option value="Caramel, cursive">CaramelRegular</option>
+                        <option value="CaramelRegular, 'Dancing Script', cursive">CaramelRegular (Custom)</option>
+                        <option value="'Dancing Script', cursive">Dancing Script</option>
+                        <option value="'Great Vibes', cursive">Great Vibes</option>
+                        <option value="'Allura', cursive">Allura</option>
+                        <option value="'Alex Brush', cursive">Alex Brush</option>
+                        <option value="'Satisfy', cursive">Satisfy</option>
                     </select>
                 </div>
             </div>
