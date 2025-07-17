@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Batch Certificate Generator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Caramel:wght@400&display=swap');
+        
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .upload-area.dragover {
+            border-color: #007bff;
+            background-color: #f0f8ff;
+        }
+        .step {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .step.active {
+            border-color: #007bff;
+            background-color: #f0f8ff;
+        }
+        .step.completed {
+            border-color: #28a745;
+            background-color: #f0fff0;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .success {
+            background-color: #28a745;
+        }
+        .success:hover {
+            background-color: #218838;
+        }
+        .preview {
+            margin-top: 20px;
+            text-align: center;
+        }
+        canvas {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .controls {
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .position-controls {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .csv-preview {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: white;
+            border-radius: 4px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #007bff;
+            transition: width 0.3s ease;
+        }
+        .name-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .name-tag {
+            background-color: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Batch Certificate Generator</h1>
+        <p>Generate multiple certificates with names from a CSV file while maintaining image quality.</p>
+        
+        <!-- Step 1: Upload Certificate Template -->
+        <div class="step active" id="step1">
+            <h3>Step 1: Upload Certificate Template</h3>
+            <div class="upload-area" id="uploadArea">
+                <p>Drag and drop your certificate template image here or click to select</p>
+                <input type="file" id="imageInput" accept="image/*">
+            </div>
+            <div class="preview">
+                <canvas id="canvas" style="display: none;"></canvas>
+            </div>
+        </div>
+
+        <!-- Step 2: Configure Text Settings -->
+        <div class="step" id="step2">
+            <h3>Step 2: Configure Text Settings</h3>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="nameInput">Preview Name:</label>
+                    <input type="text" id="nameInput" placeholder="Enter name for preview" value="Srirama Bhavana">
+                </div>
+                
+                <div class="control-group">
+                    <label for="fontSizeInput">Font Size:</label>
+                    <input type="range" id="fontSizeInput" min="20" max="80" value="36">
+                    <span id="fontSizeValue">36px</span>
+                </div>
+                
+                <div class="control-group">
+                    <label for="colorInput">Text Color:</label>
+                    <input type="color" id="colorInput" value="#e74c3c">
+                </div>
+                
+                <div class="control-group">
+                    <label for="fontFamily">Font Family:</label>
+                    <select id="fontFamily">
+                        <option value="Arial, sans-serif">Arial</option>
+                        <option value="Times New Roman, serif">Times New Roman</option>
+                        <option value="Georgia, serif">Georgia</option>
+                        <option value="Verdana, sans-serif">Verdana</option>
+                        <option value="Helvetica, sans-serif">Helvetica</option>
+                        <option value="Courier New, monospace">Courier New</option>
+                        <option value="Caramel, cursive">CaramelRegular</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="position-controls">
+                <button onclick="moveText(-5, 0)">← Left</button>
+                <button onclick="moveText(0, -5)">↑ Up</button>
+                <button onclick="moveText(5, 0)">Right →</button>
+                <button onclick="moveText(0, 5)">↓ Down</button>
+                <button onclick="resetPosition()">Reset Position</button>
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <button onclick="addName()" id="addNameBtn" disabled>Preview Certificate</button>
+            </div>
+        </div>
+
+        <!-- Step 3: Upload CSV File -->
+        <div class="step" id="step3">
+            <h3>Step 3: Upload CSV File with Names</h3>
+            <div class="upload-area" id="csvUploadArea">
+                <p>Drag and drop your CSV file here or click to select</p>
+                <input type="file" id="csvInput" accept=".csv">
+            </div>
+            
+            <div class="control-group">
+                <label for="columnSelect">Select Name Column:</label>
+                <select id="columnSelect" disabled>
+                    <option value="">Select a column...</option>
+                </select>
+            </div>
+            
+            <div class="csv-preview" id="csvPreview" style="display: none;">
+                <h4>CSV Preview:</h4>
+                <div id="csvContent"></div>
+            </div>
+            
+            <div class="name-list" id="nameList"></div>
+        </div>
+
+        <!-- Step 4: Generate Certificates -->
+        <div class="step" id="step4">
+            <h3>Step 4: Generate Certificates</h3>
+            <div style="text-align: center;">
+                <button onclick="generateAllCertificates()" id="generateBtn" disabled class="success">
+                    Generate All Certificates
+                </button>
+            </div>
+            
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div id="status"></div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="downloadZip()" id="downloadZipBtn" disabled class="success">
+                    Download All Certificates (ZIP)
+                </button>
+                <button onclick="downloadIndividual()" id="downloadIndividualBtn" disabled class="success">
+                    Download Individual Certificates
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include JSZip library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script>
+        let canvas = document.getElementById('canvas');
+        let ctx = canvas.getContext('2d');
+        let originalImage = null;
+        let textX = 0;
+        let textY = 0;
+        let defaultTextX = 0;
+        let defaultTextY = 0;
+        let csvData = [];
+        let nameColumn = '';
+        let generatedCertificates = [];
+
+        // Initialize event listeners
+        document.getElementById('imageInput').addEventListener('change', handleFileSelect);
+        document.getElementById('csvInput').addEventListener('change', handleCSVSelect);
+        document.getElementById('uploadArea').addEventListener('dragover', handleDragOver);
+        document.getElementById('uploadArea').addEventListener('drop', handleDrop);
+        document.getElementById('csvUploadArea').addEventListener('dragover', handleDragOver);
+        document.getElementById('csvUploadArea').addEventListener('drop', handleCSVDrop);
+        
+        // Real-time updates
+        document.getElementById('nameInput').addEventListener('input', updatePreview);
+        document.getElementById('fontSizeInput').addEventListener('input', updateFontSize);
+        document.getElementById('colorInput').addEventListener('input', updatePreview);
+        document.getElementById('fontFamily').addEventListener('change', updatePreview);
+        document.getElementById('columnSelect').addEventListener('change', handleColumnSelect);
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                loadImage(files[0]);
+            }
+        }
+
+        function handleCSVDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'text/csv') {
+                loadCSV(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                loadImage(file);
+            }
+        }
+
+        function handleCSVSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                loadCSV(file);
+            }
+        }
+
+        function loadImage(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    originalImage = img;
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    
+                    // Set default text position
+                    defaultTextX = img.width / 2;
+                    defaultTextY = img.height * 0.42;
+                    textX = defaultTextX;
+                    textY = defaultTextY;
+                    
+                    canvas.style.display = 'block';
+                    document.getElementById('addNameBtn').disabled = false;
+                    
+                    // Mark step 1 as completed and activate step 2
+                    document.getElementById('step1').classList.add('completed');
+                    document.getElementById('step1').classList.remove('active');
+                    document.getElementById('step2').classList.add('active');
+                    
+                    drawImage();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function loadCSV(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const csvText = e.target.result;
+                parseCSV(csvText);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            
+            csvData = [];
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim()) {
+                    const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                    const row = {};
+                    headers.forEach((header, index) => {
+                        row[header] = values[index] || '';
+                    });
+                    csvData.push(row);
+                }
+            }
+            
+            // Populate column selector
+            const columnSelect = document.getElementById('columnSelect');
+            columnSelect.innerHTML = '<option value="">Select a column...</option>';
+            headers.forEach(header => {
+                const option = document.createElement('option');
+                option.value = header;
+                option.textContent = header;
+                columnSelect.appendChild(option);
+            });
+            
+            columnSelect.disabled = false;
+            
+            // Show CSV preview
+            displayCSVPreview(headers, csvData);
+            
+            // Mark step 3 as active
+            document.getElementById('step2').classList.add('completed');
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step3').classList.add('active');
+        }
+
+        function displayCSVPreview(headers, data) {
+            const preview = document.getElementById('csvPreview');
+            const content = document.getElementById('csvContent');
+            
+            let html = '<table style="width: 100%; border-collapse: collapse;">';
+            html += '<tr>';
+            headers.forEach(header => {
+                html += `<th style="border: 1px solid #ddd; padding: 8px; background-color: #f2f2f2;">${header}</th>`;
+            });
+            html += '</tr>';
+            
+            // Show first 5 rows
+            for (let i = 0; i < Math.min(5, data.length); i++) {
+                html += '<tr>';
+                headers.forEach(header => {
+                    html += `<td style="border: 1px solid #ddd; padding: 8px;">${data[i][header] || ''}</td>`;
+                });
+                html += '</tr>';
+            }
+            
+            if (data.length > 5) {
+                html += `<tr><td colspan="${headers.length}" style="text-align: center; padding: 8px; font-style: italic;">... and ${data.length - 5} more rows</td></tr>`;
+            }
+            
+            html += '</table>';
+            content.innerHTML = html;
+            preview.style.display = 'block';
+        }
+
+        function handleColumnSelect(e) {
+            nameColumn = e.target.value;
+            if (nameColumn) {
+                displayNameList();
+                document.getElementById('generateBtn').disabled = false;
+                
+                // Mark step 3 as completed and activate step 4
+                document.getElementById('step3').classList.add('completed');
+                document.getElementById('step3').classList.remove('active');
+                document.getElementById('step4').classList.add('active');
+            }
+        }
+
+        function displayNameList() {
+            const nameList = document.getElementById('nameList');
+            const names = csvData.map(row => row[nameColumn]).filter(name => name);
+            
+            let html = '<h4>Names to be processed:</h4>';
+            names.forEach(name => {
+                html += `<span class="name-tag">${name}</span>`;
+            });
+            
+            nameList.innerHTML = html;
+        }
+
+        function drawImage() {
+            if (!originalImage) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(originalImage, 0, 0);
+        }
+
+        function addName() {
+            if (!originalImage) return;
+            
+            drawImage();
+            
+            const name = document.getElementById('nameInput').value;
+            const fontSize = document.getElementById('fontSizeInput').value;
+            const color = document.getElementById('colorInput').value;
+            const fontFamily = document.getElementById('fontFamily').value;
+            
+            if (name.trim()) {
+                drawNameOnCanvas(ctx, name, fontSize, color, fontFamily, textX, textY);
+            }
+        }
+
+        function drawNameOnCanvas(context, name, fontSize, color, fontFamily, x, y) {
+            context.font = `${fontSize}px ${fontFamily}`;
+            context.fillStyle = color;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            
+            // Add text shadow
+            context.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            context.shadowBlur = 2;
+            context.shadowOffsetX = 1;
+            context.shadowOffsetY = 1;
+            
+            context.fillText(name, x, y);
+            
+            // Reset shadow
+            context.shadowColor = 'transparent';
+            context.shadowBlur = 0;
+            context.shadowOffsetX = 0;
+            context.shadowOffsetY = 0;
+        }
+
+        function updatePreview() {
+            addName();
+        }
+
+        function updateFontSize() {
+            const size = document.getElementById('fontSizeInput').value;
+            document.getElementById('fontSizeValue').textContent = size + 'px';
+            updatePreview();
+        }
+
+        function moveText(deltaX, deltaY) {
+            textX += deltaX;
+            textY += deltaY;
+            addName();
+        }
+
+        function resetPosition() {
+            textX = defaultTextX;
+            textY = defaultTextY;
+            addName();
+        }
+
+        async function generateAllCertificates() {
+            if (!originalImage || !nameColumn || csvData.length === 0) {
+                alert('Please ensure you have uploaded an image and selected a name column.');
+                return;
+            }
+            
+            const names = csvData.map(row => row[nameColumn]).filter(name => name && name.trim());
+            if (names.length === 0) {
+                alert('No valid names found in the selected column.');
+                return;
+            }
+            
+            const fontSize = document.getElementById('fontSizeInput').value;
+            const color = document.getElementById('colorInput').value;
+            const fontFamily = document.getElementById('fontFamily').value;
+            
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            const status = document.getElementById('status');
+            const generateBtn = document.getElementById('generateBtn');
+            
+            // Disable generate button during processing
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generating...';
+            
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+            generatedCertificates = [];
+            
+            status.innerHTML = '<div class="status info">Starting certificate generation...</div>';
+            
+            try {
+                for (let i = 0; i < names.length; i++) {
+                    const name = names[i].trim();
+                    
+                    // Update status before processing each certificate
+                    status.innerHTML = `<div class="status info">Processing: ${name} (${i + 1} of ${names.length})</div>`;
+                    
+                    // Create a new canvas for each certificate
+                    const tempCanvas = document.createElement('canvas');
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCanvas.width = originalImage.width;
+                    tempCanvas.height = originalImage.height;
+                    
+                    // Draw the original image
+                    tempCtx.drawImage(originalImage, 0, 0);
+                    
+                    // Add the name
+                    drawNameOnCanvas(tempCtx, name, fontSize, color, fontFamily, textX, textY);
+                    
+                    // Convert to data URL instead of blob for better compatibility
+                    const dataURL = tempCanvas.toDataURL('image/png', 1.0);
+                    
+                    // Convert data URL to blob
+                    const response = await fetch(dataURL);
+                    const blob = await response.blob();
+                    
+                    generatedCertificates.push({
+                        name: name,
+                        blob: blob,
+                        dataURL: dataURL,
+                        filename: `certificate_${name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_')}.png`
+                    });
+                    
+                    // Update progress
+                    const progress = ((i + 1) / names.length) * 100;
+                    progressFill.style.width = progress + '%';
+                    
+                    // Force a repaint to show progress
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                }
+                
+                status.innerHTML = `<div class="status success">Successfully generated ${names.length} certificates! Ready for download.</div>`;
+                document.getElementById('downloadZipBtn').disabled = false;
+                document.getElementById('downloadIndividualBtn').disabled = false;
+                
+            } catch (error) {
+                console.error('Error generating certificates:', error);
+                status.innerHTML = `<div class="status error">Error generating certificates: ${error.message}</div>`;
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Generate All Certificates';
+            }
+        }
+
+        async function downloadZip() {
+            if (generatedCertificates.length === 0) {
+                alert('No certificates generated yet. Please generate certificates first.');
+                return;
+            }
+            
+            const status = document.getElementById('status');
+            const downloadBtn = document.getElementById('downloadZipBtn');
+            
+            try {
+                downloadBtn.disabled = true;
+                downloadBtn.textContent = 'Creating ZIP...';
+                
+                status.innerHTML = '<div class="status info">Creating ZIP file...</div>';
+                
+                const zip = new JSZip();
+                const folder = zip.folder('certificates');
+                
+                // Add all certificates to zip
+                for (let i = 0; i < generatedCertificates.length; i++) {
+                    const cert = generatedCertificates[i];
+                    folder.file(cert.filename, cert.blob);
+                    
+                    // Show progress
+                    status.innerHTML = `<div class="status info">Adding ${cert.filename} to ZIP... (${i + 1}/${generatedCertificates.length})</div>`;
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                }
+                
+                status.innerHTML = '<div class="status info">Finalizing ZIP file...</div>';
+                
+                // Generate and download zip
+                const content = await zip.generateAsync({
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: {
+                        level: 6
+                    }
+                });
+                
+                // Create download link
+                const url = window.URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'certificates.zip';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                
+                status.innerHTML = '<div class="status success">ZIP file downloaded successfully!</div>';
+                
+            } catch (error) {
+                console.error('Error creating ZIP:', error);
+                status.innerHTML = `<div class="status error">Error creating ZIP file: ${error.message}</div>`;
+            } finally {
+                downloadBtn.disabled = false;
+                downloadBtn.textContent = 'Download All Certificates (ZIP)';
+            }
+        }
+
+        // Function to download individual certificates
+        function downloadIndividual() {
+            if (generatedCertificates.length === 0) {
+                alert('No certificates generated yet. Please generate certificates first.');
+                return;
+            }
+            
+            const status = document.getElementById('status');
+            status.innerHTML = '<div class="status info">Downloading individual certificates...</div>';
+            
+            generatedCertificates.forEach((cert, index) => {
+                setTimeout(() => {
+                    const url = window.URL.createObjectURL(cert.blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = cert.filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    if (index === generatedCertificates.length - 1) {
+                        status.innerHTML = '<div class="status success">All individual certificates downloaded!</div>';
+                    }
+                }, index * 500); // Delay each download by 500ms
+            });
+        }
+    </script>
+</body>
+</html>
