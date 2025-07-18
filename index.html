@@ -5,9 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Batch Certificate Generator</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&family=Great+Vibes&family=Allura&family=Alex+Brush&family=Satisfy&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Arizonia&family=Rouge+Script&family=Allura&family=Great+Vibes&family=Euphoria+Script&family=Tangerine:wght@400;700&family=Alex+Brush&display=swap');
         
-        /* Custom font face for CaramelRegular - user needs to add the font file */
+        /* Custom font faces for your fonts */
+        @font-face {
+            font-family: 'Belianty Elesha';
+            src: url('Belianty_Elesha.ttf') format('truetype'),
+                 url('Belianty_Elesha.woff2') format('woff2'),
+                 url('Belianty_Elesha.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
         @font-face {
             font-family: 'CaramelRegular';
             src: url('CaramelRegular.ttf') format('truetype'),
@@ -177,12 +186,55 @@
             color: #0c5460;
             border: 1px solid #bee5eb;
         }
+        
+        /* Font test area */
+        .font-test {
+            margin: 15px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .font-sample {
+            font-size: 24px;
+            margin: 10px 0;
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: white;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Batch Certificate Generator</h1>
         <p>Generate multiple certificates with names from a CSV file while maintaining image quality.</p>
+        
+        <div class="font-instructions" style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            <h4 style="margin-top: 0; color: #856404;">📝 Font Setup Instructions:</h4>
+            <p style="margin-bottom: 10px; color: #856404;">To use your custom fonts:</p>
+            <ol style="color: #856404; padding-left: 20px;">
+                <li><strong>For Belianty Elesha:</strong> Save your font file as <code>Belianty_Elesha.ttf</code> in the same folder as this HTML file</li>
+                <li><strong>For Caramel:</strong> Save your font file as <code>CaramelRegular.ttf</code> in the same folder as this HTML file</li>
+                <li>Make sure the font files are named exactly as specified above</li>
+                <li>Select your desired font from the dropdown below</li>
+            </ol>
+            <p style="margin-bottom: 0; color: #856404;"><strong>⭐ Ready-to-use alternatives:</strong> "Pinyon Script", "Arizonia", or "Rouge Script" work immediately without font files!</p>
+        </div>
+
+        <!-- Font Test Area -->
+        <div class="font-test">
+            <h4>Font Test Area:</h4>
+            <div class="font-sample" style="font-family: 'Belianty Elesha', cursive;">
+                Belianty Elesha: Srirama Bhavana
+            </div>
+            <div class="font-sample" style="font-family: 'CaramelRegular', cursive;">
+                Caramel Regular: Srirama Bhavana
+            </div>
+            <div class="font-sample" style="font-family: 'Pinyon Script', cursive;">
+                Pinyon Script: Srirama Bhavana
+            </div>
+        </div>
         
         <!-- Step 1: Upload Certificate Template -->
         <div class="step active" id="step1">
@@ -207,8 +259,8 @@
                 
                 <div class="control-group">
                     <label for="fontSizeInput">Font Size:</label>
-                    <input type="range" id="fontSizeInput" min="20" max="80" value="36">
-                    <span id="fontSizeValue">36px</span>
+                    <input type="range" id="fontSizeInput" min="20" max="100" value="42">
+                    <span id="fontSizeValue">42px</span>
                 </div>
                 
                 <div class="control-group">
@@ -219,18 +271,22 @@
                 <div class="control-group">
                     <label for="fontFamily">Font Family:</label>
                     <select id="fontFamily">
+                        <option value="'Belianty Elesha', cursive">Belianty Elesha (Custom) ⭐</option>
+                        <option value="'CaramelRegular', 'Pinyon Script', cursive">Caramel Regular (Custom)</option>
+                        <option value="'Pinyon Script', cursive">Pinyon Script</option>
+                        <option value="'Arizonia', cursive">Arizonia</option>
+                        <option value="'Rouge Script', cursive">Rouge Script</option>
+                        <option value="'Great Vibes', cursive">Great Vibes</option>
+                        <option value="'Allura', cursive">Allura</option>
+                        <option value="'Euphoria Script', cursive">Euphoria Script</option>
+                        <option value="'Tangerine', cursive">Tangerine</option>
+                        <option value="'Alex Brush', cursive">Alex Brush</option>
                         <option value="Arial, sans-serif">Arial</option>
                         <option value="Times New Roman, serif">Times New Roman</option>
                         <option value="Georgia, serif">Georgia</option>
                         <option value="Verdana, sans-serif">Verdana</option>
                         <option value="Helvetica, sans-serif">Helvetica</option>
                         <option value="Courier New, monospace">Courier New</option>
-                        <option value="CaramelRegular, 'Dancing Script', cursive">CaramelRegular (Custom)</option>
-                        <option value="'Dancing Script', cursive">Dancing Script</option>
-                        <option value="'Great Vibes', cursive">Great Vibes</option>
-                        <option value="'Allura', cursive">Allura</option>
-                        <option value="'Alex Brush', cursive">Alex Brush</option>
-                        <option value="'Satisfy', cursive">Satisfy</option>
                     </select>
                 </div>
             </div>
@@ -516,12 +572,23 @@
         }
 
         function drawNameOnCanvas(context, name, fontSize, color, fontFamily, x, y) {
+            // Wait for font to load if it's a custom font
+            if (fontFamily.includes('Belianty Elesha') || fontFamily.includes('CaramelRegular')) {
+                document.fonts.ready.then(() => {
+                    drawTextWithFont(context, name, fontSize, color, fontFamily, x, y);
+                });
+            } else {
+                drawTextWithFont(context, name, fontSize, color, fontFamily, x, y);
+            }
+        }
+
+        function drawTextWithFont(context, name, fontSize, color, fontFamily, x, y) {
             context.font = `${fontSize}px ${fontFamily}`;
             context.fillStyle = color;
             context.textAlign = 'center';
             context.textBaseline = 'middle';
             
-            // Add text shadow
+            // Add text shadow for better readability
             context.shadowColor = 'rgba(0, 0, 0, 0.3)';
             context.shadowBlur = 2;
             context.shadowOffsetX = 1;
@@ -590,6 +657,9 @@
             status.innerHTML = '<div class="status info">Starting certificate generation...</div>';
             
             try {
+                // Wait for fonts to load before starting generation
+                await document.fonts.ready;
+                
                 for (let i = 0; i < names.length; i++) {
                     const name = names[i].trim();
                     
@@ -605,10 +675,13 @@
                     // Draw the original image
                     tempCtx.drawImage(originalImage, 0, 0);
                     
-                    // Add the name
-                    drawNameOnCanvas(tempCtx, name, fontSize, color, fontFamily, textX, textY);
+                    // Add the name with proper font handling
+                    await new Promise(resolve => {
+                        drawNameOnCanvas(tempCtx, name, fontSize, color, fontFamily, textX, textY);
+                        setTimeout(resolve, 100); // Give time for font rendering
+                    });
                     
-                    // Convert to data URL instead of blob for better compatibility
+                    // Convert to data URL with high quality
                     const dataURL = tempCanvas.toDataURL('image/png', 1.0);
                     
                     // Convert data URL to blob
@@ -730,6 +803,30 @@
                 }, index * 500); // Delay each download by 500ms
             });
         }
+
+        // Check if fonts are available on page load
+        window.addEventListener('load', function() {
+            // Test if custom fonts are available
+            const testFonts = ['Belianty Elesha', 'CaramelRegular'];
+            testFonts.forEach(fontName => {
+                const testElement = document.createElement('span');
+                testElement.style.fontFamily = fontName;
+                testElement.style.fontSize = '12px';
+                testElement.style.position = 'absolute';
+                testElement.style.visibility = 'hidden';
+                testElement.textContent = 'Test';
+                document.body.appendChild(testElement);
+                
+                // Check if font loaded properly
+                setTimeout(() => {
+                    const computedFont = window.getComputedStyle(testElement).fontFamily;
+                    if (!computedFont.includes(fontName)) {
+                        console.warn(`Font ${fontName} not loaded. Make sure the font file is in the same directory.`);
+                    }
+                    document.body.removeChild(testElement);
+                }, 1000);
+            });
+        });
     </script>
 </body>
 </html>
