@@ -567,22 +567,12 @@
             const fontFamily = document.getElementById('fontFamily').value;
             
             if (name.trim()) {
+                // Simple direct rendering - no async for preview
                 drawNameOnCanvas(ctx, name, fontSize, color, fontFamily, textX, textY);
             }
         }
 
         function drawNameOnCanvas(context, name, fontSize, color, fontFamily, x, y) {
-            // Wait for font to load if it's a custom font
-            if (fontFamily.includes('Belianty Elesha') || fontFamily.includes('CaramelRegular')) {
-                document.fonts.ready.then(() => {
-                    drawTextWithFont(context, name, fontSize, color, fontFamily, x, y);
-                });
-            } else {
-                drawTextWithFont(context, name, fontSize, color, fontFamily, x, y);
-            }
-        }
-
-        function drawTextWithFont(context, name, fontSize, color, fontFamily, x, y) {
             context.font = `${fontSize}px ${fontFamily}`;
             context.fillStyle = color;
             context.textAlign = 'center';
@@ -675,11 +665,11 @@
                     // Draw the original image
                     tempCtx.drawImage(originalImage, 0, 0);
                     
-                    // Add the name with proper font handling
-                    await new Promise(resolve => {
-                        drawNameOnCanvas(tempCtx, name, fontSize, color, fontFamily, textX, textY);
-                        setTimeout(resolve, 100); // Give time for font rendering
-                    });
+                    // Add the name with font handling
+                    drawNameOnCanvas(tempCtx, name, fontSize, color, fontFamily, textX, textY);
+                    
+                    // Small delay to ensure rendering completes
+                    await new Promise(resolve => setTimeout(resolve, 50));
                     
                     // Convert to data URL with high quality
                     const dataURL = tempCanvas.toDataURL('image/png', 1.0);
